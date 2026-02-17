@@ -60,6 +60,9 @@ A full-stack wiki platform built with **Spring Boot 3** and **React 18**, featur
 - **Admin panel** &mdash; Topbar button opens a modal with search index statistics, reindex actions (full or per-page), and sensitive pages list
 - **Role-aware UI** &mdash; Admin-only buttons (Permissions, Admin) are hidden from non-admin users
 
+### Export
+- **Download as PDF** &mdash; Client-side PDF generation from any wiki page using html2pdf.js; A4 format, portrait orientation, 10mm margins, page-title-based filename
+
 ### Data Management
 - **Persistent bind mounts** &mdash; Database and file storage use host-directory bind mounts (`./data/`), safe from `docker-compose down -v`
 - **Backup & restore scripts** &mdash; One-command backup (`./backup.sh`) and restore (`./restore.sh`) with timestamped archives
@@ -71,7 +74,7 @@ A full-stack wiki platform built with **Spring Boot 3** and **React 18**, featur
 | Layer | Technology |
 |---|---|
 | **Backend** | Java 17, Spring Boot 3.2.2, Spring Data JPA, Spring Security, Lombok |
-| **Frontend** | React 18, React Router 6, Editor.js, Axios |
+| **Frontend** | React 18, React Router 6, Editor.js, Axios, html2pdf.js |
 | **Database** | PostgreSQL 15 |
 | **Object Storage** | MinIO (S3-compatible) via AWS SDK v2 |
 | **Document Parsing** | Apache Tika 2.9.1 |
@@ -237,10 +240,31 @@ wiki-app/
 │   │   └── resources/
 │   │       └── application.properties
 │   └── test/java/com/wiki/
-│       ├── security/SecurityValidatorTest.java
+│       ├── controller/
+│       │   ├── AttachmentControllerTest.java
+│       │   ├── GlobalExceptionHandlerTest.java
+│       │   ├── PermissionControllerIntegrationTest.java
+│       │   ├── SearchControllerTest.java
+│       │   ├── WikiPageControllerIntegrationTest.java
+│       │   └── WikiPageControllerTest.java
+│       ├── exception/StorageExceptionTest.java
+│       ├── integration/WikiPageLifecycleIntegrationTest.java
+│       ├── model/
+│       │   ├── PagePermissionTest.java
+│       │   ├── UserTest.java
+│       │   └── WikiPageTest.java
+│       ├── repository/
+│       │   ├── PagePermissionRepositoryIntegrationTest.java
+│       │   └── WikiPageRepositoryIntegrationTest.java
+│       ├── security/
+│       │   ├── SecurityValidatorTest.java
+│       │   └── WikiUserDetailsServiceTest.java
 │       └── service/
-│           ├── MinioStorageServiceTest.java
 │           ├── MinioStorageServiceErrorHandlingTest.java
+│           ├── MinioStorageServiceTest.java
+│           ├── MinioStorageServiceUnitTest.java
+│           ├── PageSecurityServiceTest.java
+│           ├── SearchServiceTest.java
 │           ├── TextExtractionServiceTest.java
 │           └── WikiPageServiceTest.java
 ├── frontend/
@@ -540,12 +564,33 @@ Detailed HTML documentation is available in the `docs/` directory:
 ./mvnw test
 ```
 
-Test suites include:
+307 tests across 22 test classes:
+
+**Unit tests:**
 - `WikiPageServiceTest` &mdash; Page CRUD, hierarchy, backlink parsing, slug generation
-- `MinioStorageServiceTest` &mdash; File upload/download with Testcontainers (requires Docker)
-- `MinioStorageServiceErrorHandlingTest` &mdash; Retry logic and error codes (requires Docker)
-- `TextExtractionServiceTest` &mdash; Tika document extraction
-- `SecurityValidatorTest` &mdash; Page-level permission checks
+- `SearchServiceTest` &mdash; Unified search, attachment search, indexing, stats
+- `TextExtractionServiceTest` &mdash; Tika document extraction for 14+ MIME types
+- `PageSecurityServiceTest` &mdash; Permission CRUD operations
+- `MinioStorageServiceUnitTest` &mdash; Storage operations with mocked S3 client
+- `SecurityValidatorTest` &mdash; Page-level permission checks for all roles
+- `WikiUserDetailsServiceTest` &mdash; User details loading
+- `WikiPageControllerTest` &mdash; Page REST endpoint unit tests
+- `AttachmentControllerTest` &mdash; Attachment endpoint unit tests
+- `SearchControllerTest` &mdash; Search endpoint unit tests
+- `GlobalExceptionHandlerTest` &mdash; Error handling
+- `WikiPageTest`, `UserTest`, `PagePermissionTest` &mdash; Model/entity tests
+- `StorageExceptionTest` &mdash; Custom exception tests
+
+**Integration tests:**
+- `WikiPageControllerIntegrationTest` &mdash; Full page lifecycle with security
+- `PermissionControllerIntegrationTest` &mdash; Permission endpoints with security
+- `WikiPageLifecycleIntegrationTest` &mdash; End-to-end page operations
+- `WikiPageRepositoryIntegrationTest` &mdash; Repository queries with H2
+- `PagePermissionRepositoryIntegrationTest` &mdash; Permission repository queries
+
+**Docker-dependent tests (Testcontainers):**
+- `MinioStorageServiceTest` &mdash; File upload/download with real MinIO container
+- `MinioStorageServiceErrorHandlingTest` &mdash; Retry logic and error codes
 
 > **Note:** Testcontainers tests require Docker. To skip them: `./mvnw test -Dtest='!MinioStorageServiceTest,!MinioStorageServiceErrorHandlingTest'`
 

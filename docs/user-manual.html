@@ -298,6 +298,35 @@
         <strong>Permissions:</strong> Only users with the <strong>Admin</strong> role can delete pages and folders. Editors can create and edit content but cannot delete it. See the <a href="#roles">Roles &amp; Permissions</a> section for details.
     </div>
 
+    <h3>Downloading a Page as PDF</h3>
+    <p>Any authenticated user can download the current page as a PDF file directly from the browser.</p>
+
+    <div class="step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+            <h4>Locate the Download PDF Button</h4>
+            <p>When viewing a page (not in edit mode), a <strong>Download PDF</strong> button appears in the page action bar alongside the Move, Delete, and Edit buttons.</p>
+        </div>
+    </div>
+    <div class="step">
+        <div class="step-number">2</div>
+        <div class="step-content">
+            <h4>Click Download PDF</h4>
+            <p>Click the button to start generating the PDF. The button text changes to <strong>"Generating..."</strong> while the PDF is being created. The PDF is generated entirely in the browser using html2pdf.js &mdash; no server round-trip is required.</p>
+        </div>
+    </div>
+    <div class="step">
+        <div class="step-number">3</div>
+        <div class="step-content">
+            <h4>Save the File</h4>
+            <p>Once generation completes, your browser will automatically download the PDF. The filename is derived from the page title (e.g., a page titled "Getting Started Guide" produces <code>Getting Started Guide.pdf</code>).</p>
+        </div>
+    </div>
+
+    <div class="info-box">
+        <strong>PDF Format:</strong> The generated PDF uses A4 page size in portrait orientation with 10mm margins on all sides. The output faithfully reproduces the rendered page content as displayed in the browser.
+    </div>
+
     <!-- ================================================================ -->
     <h2 id="folders">4. Working with Folders</h2>
 

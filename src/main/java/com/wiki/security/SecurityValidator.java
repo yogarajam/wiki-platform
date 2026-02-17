@@ -207,8 +207,7 @@ public class SecurityValidator {
     private boolean checkDefaultPermission(User user, Set<PermissionType> requiredPermissions) {
         // Editors can view and edit by default
         if (user.hasRole(Role.EDITOR)) {
-            if (requiredPermissions.stream().anyMatch(p ->
-                    p == PermissionType.VIEW || p == PermissionType.EDIT || p == PermissionType.FULL_ACCESS)) {
+            if (requiredPermissions.contains(PermissionType.VIEW) || requiredPermissions.contains(PermissionType.EDIT)) {
                 return true;
             }
         }

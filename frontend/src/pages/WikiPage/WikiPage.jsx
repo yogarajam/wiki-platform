@@ -3,7 +3,7 @@ import WikiEditor from '../../components/WikiEditor';
 import PageTreeSidebar from '../../components/PageTreeSidebar';
 import PermissionsModal from '../../components/PermissionsModal/PermissionsModal';
 import html2pdf from 'html2pdf.js';
-import { wikiPageApi, uploadApi, aiApi } from '../../services/api';
+import { wikiPageApi, uploadApi } from '../../services/api';
 import './WikiPage.css';
 
 /**
@@ -31,8 +31,6 @@ const WikiPage = ({ isAdmin }) => {
     const [attachments, setAttachments] = useState([]);
     const [isUploading, setIsUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(null);
-    const [isPolishing, setIsPolishing] = useState(false);
-    const [editorKey, setEditorKey] = useState(0);
     const [isDownloading, setIsDownloading] = useState(false);
     const [sidebarWidth, setSidebarWidth] = useState(280);
     const isResizing = useRef(false);
@@ -297,33 +295,6 @@ const WikiPage = ({ isAdmin }) => {
         }
     }, [currentPage]);
 
-    // Handle AI polish
-    const handlePolish = useCallback(async () => {
-        const contentToPolish = editedContent || currentPage?.content;
-        if (!contentToPolish) return;
-
-        try {
-            setIsPolishing(true);
-            const contentStr = typeof contentToPolish === 'object'
-                ? JSON.stringify(contentToPolish)
-                : contentToPolish;
-
-            const result = await aiApi.polishContent(contentStr);
-            const polishedStr = result.content;
-            const polishedObj = JSON.parse(polishedStr);
-
-            setEditedContent(polishedObj);
-            setCurrentPage((prev) => ({ ...prev, content: polishedStr }));
-            setEditorKey((k) => k + 1);
-        } catch (err) {
-            console.error('Error polishing content:', err);
-            const msg = err.response?.data?.error || err.message || 'Failed to polish content';
-            alert('Polish failed: ' + msg);
-        } finally {
-            setIsPolishing(false);
-        }
-    }, [editedContent, currentPage]);
-
     // Handle file upload
     const handleFileUpload = useCallback(async (e) => {
         const files = Array.from(e.target.files);
@@ -515,21 +486,14 @@ const WikiPage = ({ isAdmin }) => {
                                         <button
                                             className="btn btn-secondary"
                                             onClick={handleCancelEdit}
-                                            disabled={isSaving || isPolishing}
+                                            disabled={isSaving}
                                         >
                                             Cancel
                                         </button>
                                         <button
-                                            className="btn btn-polish"
-                                            onClick={handlePolish}
-                                            disabled={isPolishing || isSaving}
-                                        >
-                                            {isPolishing ? 'Polishing...' : 'Polish'}
-                                        </button>
-                                        <button
                                             className="btn btn-primary"
                                             onClick={handleSave}
-                                            disabled={isSaving || isPolishing}
+                                            disabled={isSaving}
                                         >
                                             {isSaving ? 'Saving...' : 'Save'}
                                         </button>
@@ -587,7 +551,7 @@ const WikiPage = ({ isAdmin }) => {
 
                         <div className="editor-wrapper">
                             <WikiEditor
-                                key={`${currentPage.id}-${editorKey}`}
+                                key={currentPage.id}
                                 pageId={currentPage.id}
                                 initialContent={currentPage.content}
                                 onChange={handleContentChange}

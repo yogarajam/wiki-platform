@@ -248,15 +248,6 @@ export const permissionApi = {
     },
 };
 
-// ==================== AI API ====================
-
-export const aiApi = {
-    polishContent: async (content) => {
-        const response = await api.post('/ai/polish', { content });
-        return response.data;
-    },
-};
-
 // ==================== Search Admin API ====================
 
 export const searchAdminApi = {

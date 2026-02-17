@@ -79,9 +79,6 @@ public class SecurityConfig {
                         // Search operations
                         .requestMatchers("/api/search/**").authenticated()
 
-                        // AI endpoints - editors and admins
-                        .requestMatchers("/api/ai/**").hasAnyRole("EDITOR", "ADMIN")
-
                         // Admin endpoints - /me is available to all authenticated users
                         .requestMatchers(HttpMethod.GET, "/api/admin/me").authenticated()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")

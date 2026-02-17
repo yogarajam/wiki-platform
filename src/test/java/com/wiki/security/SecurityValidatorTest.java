@@ -112,8 +112,6 @@ class SecurityValidatorTest {
         @DisplayName("Admin should have view access to any page")
         void adminShouldHaveViewAccess() {
             setupAuthentication(adminUser);
-            when(wikiPageRepository.existsById(100L)).thenReturn(true);
-            when(permissionRepository.countByWikiPageId(100L)).thenReturn(0L);
 
             boolean canView = securityValidator.canView(100L);
 
@@ -124,8 +122,6 @@ class SecurityValidatorTest {
         @DisplayName("Admin should have edit access to any page")
         void adminShouldHaveEditAccess() {
             setupAuthentication(adminUser);
-            when(wikiPageRepository.existsById(100L)).thenReturn(true);
-            when(permissionRepository.countByWikiPageId(100L)).thenReturn(0L);
 
             boolean canEdit = securityValidator.canEdit(100L);
 
@@ -136,8 +132,6 @@ class SecurityValidatorTest {
         @DisplayName("Admin should have delete access to any page")
         void adminShouldHaveDeleteAccess() {
             setupAuthentication(adminUser);
-            when(wikiPageRepository.existsById(100L)).thenReturn(true);
-            when(permissionRepository.countByWikiPageId(100L)).thenReturn(0L);
 
             boolean canDelete = securityValidator.canDelete(100L);
 
@@ -148,9 +142,6 @@ class SecurityValidatorTest {
         @DisplayName("Admin should have access to sensitive pages")
         void adminShouldHaveAccessToSensitivePages() {
             setupAuthentication(adminUser);
-            when(wikiPageRepository.existsById(100L)).thenReturn(true);
-            // Page has explicit permissions (is sensitive)
-            when(permissionRepository.countByWikiPageId(100L)).thenReturn(1L);
 
             boolean canEdit = securityValidator.canEdit(100L);
 
