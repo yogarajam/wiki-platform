@@ -29,8 +29,6 @@ const WikiEditor = ({
     const editorRef = useRef(null);
     const editorInstance = useRef(null);
     const [isReady, setIsReady] = useState(false);
-    const [isDragging, setIsDragging] = useState(false);
-    const [uploadProgress, setUploadProgress] = useState(null);
 
     // Registered Editor.js block types
     const SUPPORTED_BLOCK_TYPES = new Set([
@@ -282,73 +280,6 @@ const WikiEditor = ({
         return () => clearTimeout(timer);
     }, [isReady, readOnly, onWikiLinkClick]);
 
-    // Handle drag and drop for images
-    const handleDragEnter = useCallback((e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setIsDragging(true);
-    }, []);
-
-    const handleDragLeave = useCallback((e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setIsDragging(false);
-    }, []);
-
-    const handleDragOver = useCallback((e) => {
-        e.preventDefault();
-        e.stopPropagation();
-    }, []);
-
-    const handleDrop = useCallback(
-        async (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            setIsDragging(false);
-
-            const files = Array.from(e.dataTransfer.files);
-            const imageFiles = files.filter((file) =>
-                file.type.startsWith('image/')
-            );
-
-            if (imageFiles.length === 0) {
-                return;
-            }
-
-            // Upload each image and insert into editor
-            for (const file of imageFiles) {
-                try {
-                    setUploadProgress(0);
-                    const result = await uploadApi.uploadFile(
-                        file,
-                        pageId ? `pages/${pageId}/images` : 'images',
-                        (progress) => setUploadProgress(progress)
-                    );
-                    setUploadProgress(null);
-
-                    // Insert image block into editor
-                    if (editorInstance.current) {
-                        await editorInstance.current.blocks.insert('image', {
-                            file: {
-                                url: result.url,
-                                objectKey: result.objectKey,
-                            },
-                            caption: file.name,
-                            withBorder: false,
-                            stretched: false,
-                            withBackground: false,
-                        });
-                    }
-                } catch (error) {
-                    console.error('Error uploading image:', error);
-                    setUploadProgress(null);
-                    alert(`Failed to upload ${file.name}: ${error.message}`);
-                }
-            }
-        },
-        [pageId]
-    );
-
     // Save editor content
     const handleSave = useCallback(async () => {
         if (!editorInstance.current || !onSave) return;
@@ -372,13 +303,7 @@ const WikiEditor = ({
     return (
         <div className="wiki-editor-container">
             <div
-                className={`wiki-editor ${isDragging ? 'dragging' : ''} ${
-                    !isReady ? 'loading' : ''
-                }`}
-                onDragEnter={handleDragEnter}
-                onDragLeave={handleDragLeave}
-                onDragOver={handleDragOver}
-                onDrop={handleDrop}
+                className={`wiki-editor ${!isReady ? 'loading' : ''}`}
             >
                 {!isReady && (
                     <div className="editor-loading">
@@ -386,42 +311,6 @@ const WikiEditor = ({
                     </div>
                 )}
                 <div ref={editorRef} className="editor-content" />
-                {isDragging && (
-                    <div className="drop-overlay">
-                        <div className="drop-message">
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="48"
-                                height="48"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                            >
-                                <rect
-                                    x="3"
-                                    y="3"
-                                    width="18"
-                                    height="18"
-                                    rx="2"
-                                    ry="2"
-                                />
-                                <circle cx="8.5" cy="8.5" r="1.5" />
-                                <polyline points="21 15 16 10 5 21" />
-                            </svg>
-                            <span>Drop images here to upload</span>
-                        </div>
-                    </div>
-                )}
-                {uploadProgress !== null && (
-                    <div className="upload-progress">
-                        <div
-                            className="progress-bar"
-                            style={{ width: `${uploadProgress}%` }}
-                        />
-                        <span>Uploading... {uploadProgress}%</span>
-                    </div>
-                )}
             </div>
         </div>
     );

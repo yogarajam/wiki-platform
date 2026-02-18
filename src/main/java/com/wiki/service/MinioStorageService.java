@@ -43,6 +43,9 @@ public class MinioStorageService {
     @Value("${minio.max-retries:3}")
     private int maxRetries;
 
+    @Value("${minio.public-url:#{null}}")
+    private String publicUrl;
+
     public MinioStorageService(S3Client s3Client) {
         this.s3Client = s3Client;
     }
@@ -279,14 +282,14 @@ public class MinioStorageService {
     }
 
     /**
-     * Get the URL for accessing a file
+     * Get the URL for accessing a file.
+     * Uses minio.public-url if configured (for Docker where internal endpoint differs from browser-accessible URL).
      */
     public String getFileUrl(String objectKey) {
-        return String.format("%s/%s/%s",
+        String baseUrl = publicUrl != null ? publicUrl :
                 s3Client.serviceClientConfiguration().endpointOverride()
-                        .map(Object::toString).orElse(""),
-                bucketName,
-                objectKey);
+                        .map(Object::toString).orElse("");
+        return String.format("%s/%s/%s", baseUrl, bucketName, objectKey);
     }
 
     /**

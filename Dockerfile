@@ -1,5 +1,5 @@
 # Use multi-stage build for efficient Docker image
-FROM maven:3.9-eclipse-temurin-17-alpine AS build
+FROM maven:3.9-eclipse-temurin-17 AS build
 WORKDIR /app
 COPY pom.xml .
 # Resolve dependencies first to leverage caching
@@ -11,7 +11,7 @@ RUN mvn clean package -DskipTests
 RUN cp target/wiki-app-*.jar app.jar
 
 # Runtime stage
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:17-jre
 WORKDIR /app
 COPY --from=build /app/app.jar app.jar
 EXPOSE 8080

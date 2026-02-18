@@ -3,7 +3,7 @@ version: '3.8'
 services:
   # PostgreSQL Database
   postgres:
-    image: postgres:15-alpine
+    image: postgres:15
     container_name: wiki-postgres
     environment:
       POSTGRES_DB: wikidb
@@ -69,6 +69,7 @@ services:
       - SPRING_DATASOURCE_USERNAME=wiki
       - SPRING_DATASOURCE_PASSWORD=wiki123
       - MINIO_ENDPOINT=http://wiki-minio:9000
+      - MINIO_PUBLIC_URL=http://localhost:9000
       - MINIO_ACCESS_KEY=minioadmin
       - MINIO_SECRET_KEY=minioadmin123
     ports:
